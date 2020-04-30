@@ -268,8 +268,8 @@ Rect Layer::getContentCrop() const {
         crop = mCurrentCrop;
     } else if (mActiveBuffer != nullptr) {
         // otherwise we use the whole buffer
-        sp<GraphicBuffer> buf = mActiveBuffer;
-        crop = buf->getBounds();
+        Mutex::Autolock lock(mActiveBufferLock);
+        crop = mActiveBuffer->getBounds();
     } else {
         // if we don't have a buffer yet, we use an empty/invalid crop
         crop.makeInvalid();
@@ -2145,7 +2145,7 @@ std::shared_ptr<compositionengine::Layer> Layer::getCompositionLayer() const {
 }
 
 bool Layer::canReceiveInput() const {
-    return isVisible();
+    return !isHiddenByPolicy();
 }
 
 compositionengine::OutputLayer* Layer::findOutputLayerForDisplay(
